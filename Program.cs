@@ -7,12 +7,15 @@ namespace TcpServerAuthentication
 {
     internal class Program
     {
+        public static MemoryClass Memory = MemoryClass.Memory;
+
         static void Main(string[] args)
         {
             InitiateServer();
         }
         private static void InitiateServer()
         {
+            //Certificate for the server. Used for authentication for clients.
             string CertPath = AppDomain.CurrentDomain.BaseDirectory + "\\cert.pfx";
             if (!File.Exists(CertPath))
             {
@@ -35,7 +38,7 @@ namespace TcpServerAuthentication
             {
                 Memory.ClientSocket = Memory.ServerSocket.AcceptTcpClient();
 
-                int ClientID = Memory.Clients.Count + 1;
+                int ClientID = Memory.Clients.Count + 1; //SessionId
 
                 Client client = new Client();
                 client.SessionId = ClientID;

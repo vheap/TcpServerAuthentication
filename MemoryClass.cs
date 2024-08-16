@@ -10,20 +10,41 @@ using System.Threading.Tasks;
 
 namespace TcpServerAuthentication
 {
-    public class Memory
+    public class MemoryClass
     {
-        public static List<TcpClient> TcpClientList = new List<TcpClient>();
-        public static Dictionary<int, Client> Clients = new Dictionary<int, Client>();
+        // A simple use of a Singleton. Not necessary, just for tutorial purposes.
+        private static MemoryClass Instance;
 
-        public static TcpListener ServerSocket = new TcpListener(8888);
-        public static TcpClient ClientSocket = default(TcpClient);
+        public static MemoryClass Memory
+        {
+            get
+            {
+                if (Instance == null)
+                    Instance = new MemoryClass();
+                return Instance;
+            }
+        }
 
-        public static X509Certificate ServerCertificate = null;
-        public static bool IsAcceptingConnections = true;
+        public  List<TcpClient> TcpClientList = new List<TcpClient>();
+        public  Dictionary<int, Client> Clients = new Dictionary<int, Client>();
 
+        public  TcpListener ServerSocket = new TcpListener(8888);
+        public  TcpClient ClientSocket = default(TcpClient);
+
+        public  X509Certificate ServerCertificate = null;
+        public  bool IsAcceptingConnections = true;
+
+        public void RemoveClient(int SessionId)
+        {
+            lock (Clients)
+            {
+                Clients.Remove(SessionId);
+            }
+        }
     }
     public class Client
     {
+        // A simple Client class with all related methods included. Refactor for real-world use, but it's similar to this.
         public TcpClient TcpClient { get; set; }
         public bool IsAuthenticated { get; set; }
         public bool IsLoggedIn { get; set; }
@@ -75,10 +96,7 @@ namespace TcpServerAuthentication
             }
             SSL.Close();
             TcpClient.Close();
-            lock (Memory.Clients)
-            {
-                Memory.Clients.Remove(SessionId);
-            }
+            MemoryClass.Memory.RemoveClient(SessionId);
         }
         private static bool VerifyClientCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
@@ -94,7 +112,7 @@ namespace TcpServerAuthentication
                     ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13;
                     UserIP = ((IPEndPoint)TcpClient.Client.RemoteEndPoint).Address.ToString();
                     SSL = new SslStream(TcpClient.GetStream(), false, VerifyClientCertificate, null);
-                    SSL.AuthenticateAsServer(Memory.ServerCertificate, clientCertificateRequired: true, checkCertificateRevocation: true);
+                    SSL.AuthenticateAsServer(MemoryClass.Memory.ServerCertificate, clientCertificateRequired: true, checkCertificateRevocation: true);
                     if (SSL.RemoteCertificate == null)
                     {
                         Console.WriteLine("Client is not genuine");
