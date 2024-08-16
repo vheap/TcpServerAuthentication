@@ -9,11 +9,10 @@ namespace TcpServerAuthentication
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!"); 
+            InitiateServer();
         }
         private static void InitiateServer()
         {
-            //ServerCertificate = X509Certificate.CreateFromCertFile(@"C:\\Users\\User\\Source\\Repos\\SmileServer\\bin\\Release\\net6.0\\cert.pfx");
             string CertPath = AppDomain.CurrentDomain.BaseDirectory + "\\cert.pfx";
             if (!File.Exists(CertPath))
             {
@@ -22,8 +21,6 @@ namespace TcpServerAuthentication
                 return;
             }
             Memory.ServerCertificate = X509Certificate.CreateFromCertFile(CertPath);
-
-            //InitiateReceiver();
 
             Thread ctThread = new Thread(InitiateReceiver);
             ctThread.Start();
